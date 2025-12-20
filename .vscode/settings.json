@@ -1,0 +1,5 @@
+{
+    "prisma.schemaPath": "\"prisma.validateSchema\": false",
+    "files.autoSave": "afterDelay",
+    "editor.codeActions.triggerOnFocusChange": true
+}
