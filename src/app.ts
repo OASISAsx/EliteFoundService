@@ -1,5 +1,6 @@
 import express from "express";
 import userRouter from "./routers/user.route";
+import mailRouter from "./routers/mail.route";
 
 const app = express();
 
@@ -25,5 +26,6 @@ app.get("/", (_req, res) => {
 });
 
 app.use("/api", userRouter);
+app.use("/api", mailRouter);
 
 export default app;

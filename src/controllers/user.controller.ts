@@ -5,7 +5,9 @@ import jwt from "jsonwebtoken";
 
 const getUsers = async (_req: Request, res: Response) => {
   try {
-    const users = await prisma.users.findMany({});
+    const users = await prisma.users.findMany({
+      where: { status: "active" },
+    });
 
     res.status(200).json({
       success: true,
@@ -28,7 +30,7 @@ const register = async (req: Request, res: Response) => {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const newUser = await prisma.users.create({
-      data: { name, email, password: hashedPassword },
+      data: { name, email, password: hashedPassword, status: "active" },
     });
     res.status(201).json({
       success: true,
@@ -49,6 +51,9 @@ const login = async (req: Request, res: Response) => {
   try {
     const user = await prisma.users.findUnique({
       where: { email },
+      include: {
+        usersInformation: true,
+      },
     });
 
     if (!user) {
@@ -83,4 +88,32 @@ const login = async (req: Request, res: Response) => {
   }
 };
 
-export { getUsers, register, login };
+const loginGoogle = async (req: Request, res: Response) => {
+  const { googleId, email, name, image } = req.body;
+
+  let user = await prisma.users.findFirst({
+    where: {
+      OR: [{ googleId }, { email }],
+    },
+  });
+
+  if (!user) {
+    user = await prisma.users.create({
+      data: {
+        googleId,
+        email,
+        name,
+        profile_image: image,
+      },
+    });
+  } else if (!user.googleId) {
+    user = await prisma.users.update({
+      where: { id: user.id },
+      data: { googleId },
+    });
+  }
+
+  res.json({ data: user });
+};
+
+export { getUsers, register, login, loginGoogle };

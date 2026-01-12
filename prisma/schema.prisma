@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "mongodb"
-   url     = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
 type EmbeddedMoviesAwards {
@@ -181,12 +181,23 @@ model theaters {
 }
 
 model users {
-  id          String @id @default(auto()) @map("_id") @db.ObjectId
-  email       String @unique(map: "email_1")
-  name        String
-  password    String
-  /// Nested objects had no data in the sample dataset to introspect a nested type.
-  preferences Json?
+  id                 String            @id @default(auto()) @map("_id") @db.ObjectId
+  googleId           String?           @unique
+  profile_image      String?
+  email              String            @unique
+  name               String
+  password           String? // ⭐ ต้อง optional
+  status             String?
+  usersInformationId String?
+  usersInformation   usersInformation? @relation(fields: [usersInformationId], references: [id])
 }
 
-
+model usersInformation {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  full_name String
+  last_name String
+  tel       String
+  Id_card   String
+  status    String
+  Users     users[]
+}
