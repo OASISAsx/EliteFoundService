@@ -6,7 +6,10 @@ import jwt from "jsonwebtoken";
 const getUsers = async (_req: Request, res: Response) => {
   try {
     const users = await prisma.users.findMany({
-      where: { status: "active" },
+      include: {
+        usersInformation: true,
+      },
+      // where: { status: "active" },
     });
 
     res.status(200).json({
@@ -63,7 +66,7 @@ const login = async (req: Request, res: Response) => {
       });
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.password || "");
 
     if (!isPasswordValid) {
       return res.status(401).json({
@@ -103,7 +106,7 @@ const loginGoogle = async (req: Request, res: Response) => {
         googleId,
         email,
         name,
-        profile_image: image,
+        profileImage: image,
       },
     });
   } else if (!user.googleId) {

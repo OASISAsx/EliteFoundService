@@ -180,24 +180,43 @@ model theaters {
   @@index([location.geo], map: "geo index")
 }
 
+model FileUpload {
+  id  String @id @default(auto()) @map("_id") @db.ObjectId
+  url String
+}
+
 model users {
   id                 String            @id @default(auto()) @map("_id") @db.ObjectId
   googleId           String?           @unique
-  profile_image      String?
+  profileImage       String?
   email              String            @unique
   name               String
-  password           String? // ⭐ ต้อง optional
+  password           String?
   status             String?
   usersInformationId String?
   usersInformation   usersInformation? @relation(fields: [usersInformationId], references: [id])
 }
 
 model usersInformation {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
-  full_name String
-  last_name String
-  tel       String
-  Id_card   String
-  status    String
-  Users     users[]
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  full_name        String
+  last_name        String
+  tel              String
+  address          String
+  province         String
+  district         String
+  sub_district     String
+  zip_code         String
+  id_card          String
+  date_of_birth    DateTime @db.Date
+  number_back_card String
+  cardImage        String
+  statementImage   String
+  work_place       String
+  position_work    String
+  salary           String
+  certificateImage String
+  age_work         String
+  status           String
+  Users            users[]
 }

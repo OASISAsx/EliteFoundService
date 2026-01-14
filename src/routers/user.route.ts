@@ -5,7 +5,6 @@ import {
   register,
   loginGoogle,
 } from "../controllers/user.controller";
-import { createAbout } from "../controllers/usersInformation.controller";
 import { verifyToken } from "../middleware/verifyToken";
 
 const router = Router();
@@ -13,7 +12,7 @@ const router = Router();
 router.get("/users", getUsers);
 router.post("/register", register);
 router.post("/login", login); // ต้องมี token
-router.post("/Information", createAbout);
+// router.post("/Information", createAbout);
 router.post("/loginGoogle", loginGoogle);
 // router.get("/users", verifyToken, getUsers);
 export default router;
