@@ -28,20 +28,47 @@ const getUsers = async (_req: Request, res: Response) => {
 
 const register = async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
+
   try {
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields",
+      });
+    }
+
+    // check email exists
+    const existingUser = await prisma.users.findFirst({
+      where: { email },
+    });
+
+    if (existingUser) {
+      return res.status(409).json({
+        success: false,
+        message: "Email already registered",
+      });
+    }
+
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const newUser = await prisma.users.create({
-      data: { name, email, password: hashedPassword, status: "active" },
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        status: "active",
+      },
     });
-    res.status(201).json({
+
+    return res.status(201).json({
       success: true,
       data: newUser,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("register error:", error);
-    res.status(500).json({
+
+    return res.status(500).json({
       success: false,
       message: "Failed to register user",
     });
