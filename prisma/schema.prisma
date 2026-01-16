@@ -76,8 +76,8 @@ model usersInformation {
   loanStatus     String   @default("pending")
   id_card_image  String
   selfie_with_id String
-  salary_slip    String
-  bank_statement String
+  salary_slip    String[]
+  bank_statement String[]
   house_document String
   other_files    String[]
   createdAt      DateTime @default(now())

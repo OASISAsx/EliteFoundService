@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { uploadToCloudinary, saveFile } from "../services/upload.service";
 
-export const singleUpload = async (req: Request, res: Response) => {
+const singleUpload = async (req: Request, res: Response) => {
   try {
     const file = req.file as Express.Multer.File;
 
@@ -20,7 +20,7 @@ export const singleUpload = async (req: Request, res: Response) => {
   }
 };
 
-export const multiUpload = async (req: Request, res: Response) => {
+const multiUpload = async (req: Request, res: Response) => {
   try {
     const files = req.files as Express.Multer.File[];
 
@@ -28,16 +28,29 @@ export const multiUpload = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "No files" });
     }
 
-    const results = [];
+    const results = await Promise.all(
+      files.map(async (file) => {
+        const upload = await uploadToCloudinary(file.buffer);
 
-    for (const file of files) {
-      const upload = await uploadToCloudinary(file.buffer);
-      const saved = await saveFile(upload.secure_url);
-      results.push(saved);
-    }
+        const saved = await saveFile(upload.secure_url);
 
-    return res.json(results);
+        return {
+          id: saved.id,
+          url: upload.secure_url,
+        };
+      })
+    );
+
+    return res.json({
+      success: true,
+      data: results,
+    });
   } catch (err: any) {
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
   }
 };
+
+export { singleUpload, multiUpload };

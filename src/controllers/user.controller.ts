@@ -2,20 +2,30 @@ import { Request, Response } from "express";
 import prisma from "../prisma/client";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import {
+  getPagination,
+  buildPaginationMeta,
+} from "../helpers/pagination.helper.js";
 
 const getUsers = async (_req: Request, res: Response) => {
   try {
-    const users = await prisma.users.findMany({
-      include: {
-        usersInformation: true,
-      },
-      // where: { status: "active" },
-    });
+    const { page, limit, take, skip } = getPagination(_req.query);
+
+    const [data, total] = await Promise.all([
+      prisma.users.findMany({
+        include: {
+          usersInformation: true,
+        },
+        take,
+        skip,
+      }),
+      prisma.users.count(),
+    ]);
 
     res.status(200).json({
       success: true,
-      // count: users.length,
-      data: users,
+      data: data,
+      meta: buildPaginationMeta(total, page, limit),
     });
   } catch (error) {
     console.error("getUsers error:", error);
@@ -125,6 +135,9 @@ const loginGoogle = async (req: Request, res: Response) => {
     where: {
       OR: [{ googleId }, { email }],
     },
+    include: {
+      usersInformation: true,
+    },
   });
 
   if (!user) {
@@ -134,12 +147,19 @@ const loginGoogle = async (req: Request, res: Response) => {
         email,
         name,
         profileImage: image,
+        status: "active",
+      },
+      include: {
+        usersInformation: true,
       },
     });
   } else if (!user.googleId) {
     user = await prisma.users.update({
       where: { id: user.id },
       data: { googleId },
+      include: {
+        usersInformation: true,
+      },
     });
   }
 
