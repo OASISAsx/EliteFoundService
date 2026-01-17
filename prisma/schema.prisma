@@ -39,27 +39,52 @@ model usersInformation {
   gender        String?
   nationality   String?
   maritalStatus String?
+  id_card_image String
+  phone         String   @unique
 
-  phone    String  @unique
   email    String?
   lineId   String?
   facebook String?
 
-  currentAddress    String
-  registeredAddress String?
-  province          String
-  district          String
-  zipcode           String
+  currentAddress  String?
+  provinceCode    Int?
+  districtCode    Int?
+  subdistrictCode Int?
+  zipcode         String?
 
+  loanStatus String @default("pending")
+
+  other_files String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  Users           users[]
+  loanGuarantors  LoanGuarantor[]
+  JobDetail       JobDetail?
+  bankInformation BankInformation?
+  province        Province?        @relation(fields: [provinceCode], references: [code])
+  district        District?        @relation(fields: [districtCode], references: [code])
+  subdistrict     Subdistrict?     @relation(fields: [subdistrictCode], references: [code])
+}
+
+model JobDetail {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
   occupation     String
   companyName    String?
   companyAddress String?
   position       String?
   salaryPerMonth Float
-  otherIncome    Float?  @default(0)
+  otherIncome    Float?   @default(0)
   workYears      Int
   employmentType String // fulltime freelance business
+  salarySlip     String[]
 
+  usersInformationId String           @unique
+  usersInformation   usersInformation @relation(fields: [usersInformationId], references: [id])
+}
+
+model BankInformation {
+  id                String @id @default(auto()) @map("_id") @db.ObjectId
   bankName          String
   bankAccountName   String
   bankAccountNumber String
@@ -69,22 +94,13 @@ model usersInformation {
   debtAmount              Float?  @default(0)
   debtInstallmentPerMonth Float?  @default(0)
 
-  kycStatus   String  @default("pending")
-  creditScore Int?
-  riskLevel   String?
-
-  loanStatus     String   @default("pending")
-  id_card_image  String
-  selfie_with_id String
-  salary_slip    String[]
+  kycStatus      String   @default("pending")
+  creditScore    Int?
+  riskLevel      String?
   bank_statement String[]
-  house_document String
-  other_files    String[]
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
 
-  Users          users[]
-  loanGuarantors LoanGuarantor[]
+  usersInformationId String           @unique
+  usersInformation   usersInformation @relation(fields: [usersInformationId], references: [id])
 }
 
 model LoanGuarantor {
@@ -99,4 +115,44 @@ model LoanGuarantor {
   createdAt DateTime @default(now())
 
   usersInformation usersInformation @relation(fields: [usersInformationId], references: [id])
+}
+
+// Aaddess
+model Province {
+  id     String  @id @default(auto()) @map("_id") @db.ObjectId
+  code   Int     @unique
+  nameTh String
+  nameEn String?
+
+  districts         District[]
+  subdistricts      Subdistrict[]      @relation("ProvinceSubdistrict")
+  usersInformations usersInformation[]
+}
+
+model District {
+  id     String  @id @default(auto()) @map("_id") @db.ObjectId
+  code   Int     @unique
+  nameTh String
+  nameEn String?
+
+  provinceCode Int
+  province     Province @relation(fields: [provinceCode], references: [code])
+
+  subdistricts      Subdistrict[]
+  usersInformations usersInformation[]
+}
+
+model Subdistrict {
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  code       Int     @unique
+  nameTh     String
+  nameEn     String?
+  postalCode String
+
+  districtCode Int
+  district     District @relation(fields: [districtCode], references: [code])
+
+  provinceCode      Int
+  province          Province           @relation("ProvinceSubdistrict", fields: [provinceCode], references: [code])
+  usersInformations usersInformation[]
 }

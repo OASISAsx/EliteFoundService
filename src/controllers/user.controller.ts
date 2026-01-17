@@ -36,6 +36,37 @@ const getUsers = async (_req: Request, res: Response) => {
   }
 };
 
+const findOne = async (_req: Request, res: Response) => {
+  try {
+    const id = _req.params.id;
+    const existingUser = await prisma.users.findFirst({
+      where: { id },
+      include: {
+        usersInformation: {
+          include: {
+            JobDetail: true,
+            // bankInformation: true,
+            province: true,
+            district: true,
+            subdistrict: true,
+          },
+        },
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      data: existingUser,
+    });
+  } catch (error) {
+    console.error("getUsers error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch users",
+    });
+  }
+};
+
 const register = async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
 
@@ -92,7 +123,15 @@ const login = async (req: Request, res: Response) => {
     const user = await prisma.users.findUnique({
       where: { email },
       include: {
-        usersInformation: true,
+        usersInformation: {
+          include: {
+            JobDetail: true,
+            // bankInformation: true,
+            province: true,
+            district: true,
+            subdistrict: true,
+          },
+        },
       },
     });
 
@@ -136,7 +175,15 @@ const loginGoogle = async (req: Request, res: Response) => {
       OR: [{ googleId }, { email }],
     },
     include: {
-      usersInformation: true,
+      usersInformation: {
+        include: {
+          JobDetail: true,
+          // bankInformation: true,
+          province: true,
+          district: true,
+          subdistrict: true,
+        },
+      },
     },
   });
 
@@ -150,7 +197,15 @@ const loginGoogle = async (req: Request, res: Response) => {
         status: "active",
       },
       include: {
-        usersInformation: true,
+        usersInformation: {
+          include: {
+            JobDetail: true,
+            // bankInformation: true,
+            province: true,
+            district: true,
+            subdistrict: true,
+          },
+        },
       },
     });
   } else if (!user.googleId) {
@@ -158,7 +213,15 @@ const loginGoogle = async (req: Request, res: Response) => {
       where: { id: user.id },
       data: { googleId },
       include: {
-        usersInformation: true,
+        usersInformation: {
+          include: {
+            JobDetail: true,
+            // bankInformation: true,
+            province: true,
+            district: true,
+            subdistrict: true,
+          },
+        },
       },
     });
   }
@@ -166,4 +229,4 @@ const loginGoogle = async (req: Request, res: Response) => {
   res.json({ data: user });
 };
 
-export { getUsers, register, login, loginGoogle };
+export { getUsers, register, login, loginGoogle, findOne };

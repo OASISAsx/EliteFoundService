@@ -4,6 +4,7 @@ import {
   login,
   register,
   loginGoogle,
+  findOne,
 } from "../controllers/user.controller";
 import { verifyToken } from "../middleware/verifyToken";
 
@@ -14,5 +15,6 @@ router.post("/register", register);
 router.post("/login", login); // ต้องมี token
 // router.post("/Information", createAbout);
 router.post("/loginGoogle", loginGoogle);
+router.post("/user/:id", findOne);
 // router.get("/users", verifyToken, getUsers);
 export default router;

@@ -52,4 +52,60 @@ const createUsersInformation = async (req: Request, res: Response) => {
   }
 };
 
-export { create, createUsersInformation };
+const findOne = async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id;
+    const userId = await prisma.usersInformation.findUnique({
+      where: { id },
+    });
+
+    res.status(201).json({ success: true, data: userId });
+  } catch (error) {
+    console.error("CREATE USER INFO ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create user information",
+    });
+  }
+};
+
+const update = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const {
+      id: _,
+      provinceCode,
+      districtCode,
+      subdistrictCode,
+      createdAt,
+      updatedAt,
+      ...rest
+    } = req.body;
+
+    const updateData = await prisma.usersInformation.update({
+      where: { id },
+      data: {
+        ...rest,
+        province: provinceCode
+          ? { connect: { code: provinceCode } }
+          : undefined,
+        district: districtCode
+          ? { connect: { code: districtCode } }
+          : undefined,
+        subdistrict: subdistrictCode
+          ? { connect: { code: subdistrictCode } }
+          : undefined,
+      },
+    });
+    res.status(200).json({ success: true, data: updateData });
+  } catch (error) {
+    console.error("UPDATE USER INFO ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update user information",
+    });
+  }
+};
+
+export { create, createUsersInformation, findOne, update };
