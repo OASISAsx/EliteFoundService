@@ -19,15 +19,16 @@ model FileUpload {
 }
 
 model users {
-  id                 String            @id @default(auto()) @map("_id") @db.ObjectId
+  id                 String  @id @default(auto()) @map("_id") @db.ObjectId
   googleId           String?
   profileImage       String?
-  email              String            @unique
+  email              String  @unique
   name               String
   password           String?
   status             String?
-  usersInformationId String?
-  usersInformation   usersInformation? @relation(fields: [usersInformationId], references: [id])
+  usersInformationId String  @unique @db.ObjectId
+
+  usersInformation usersInformation? @relation(fields: [usersInformationId], references: [id])
 }
 
 model usersInformation {
@@ -79,8 +80,9 @@ model JobDetail {
   employmentType String // fulltime freelance business
   salarySlip     String[]
 
-  usersInformationId String           @unique
-  usersInformation   usersInformation @relation(fields: [usersInformationId], references: [id])
+  usersInformationId String @unique @db.ObjectId
+
+  usersInformation usersInformation @relation(fields: [usersInformationId], references: [id])
 }
 
 model BankInformation {
@@ -99,13 +101,14 @@ model BankInformation {
   riskLevel      String?
   bank_statement String[]
 
-  usersInformationId String           @unique
-  usersInformation   usersInformation @relation(fields: [usersInformationId], references: [id])
+  usersInformationId String @unique @db.ObjectId
+
+  usersInformation usersInformation @relation(fields: [usersInformationId], references: [id])
 }
 
 model LoanGuarantor {
   id                 String @id @default(auto()) @map("_id") @db.ObjectId
-  usersInformationId String
+  usersInformationId String @unique @db.ObjectId
 
   name         String
   relationship String
