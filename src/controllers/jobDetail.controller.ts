@@ -23,7 +23,7 @@ const create = async (req: Request, res: Response) => {
         usersInformationId,
       },
     });
-
+    console.log(updateData);
     res.status(200).json({ success: true, data: updateData });
   } catch (error) {
     console.error("JOB DETAIL ERROR:", error);

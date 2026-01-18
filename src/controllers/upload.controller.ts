@@ -38,7 +38,7 @@ const multiUpload = async (req: Request, res: Response) => {
           id: saved.id,
           url: upload.secure_url,
         };
-      })
+      }),
     );
 
     return res.json({
