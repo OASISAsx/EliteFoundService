@@ -25,10 +25,22 @@ const createUsersInformation = async (req: Request, res: Response) => {
   const { userId, ...body } = req.body;
 
   try {
-    if (body.date_of_birth && body.date_of_birth !== "") {
-      body.date_of_birth = new Date(body.date_of_birth);
-    } else {
-      delete body.date_of_birth;
+    // if (body.date_of_birth && body.date_of_birth !== "") {
+    //   body.date_of_birth = new Date(body.date_of_birth);
+    // } else {
+    //   delete body.date_of_birth;
+    // }
+    const { citizenId } = body;
+
+    const exists = await prisma.usersInformation.findUnique({
+      where: { citizenId },
+    });
+
+    if (exists) {
+      return res.status(400).json({
+        success: false,
+        message: "CitizenId already exists",
+      });
     }
 
     const info = await prisma.usersInformation.create({
