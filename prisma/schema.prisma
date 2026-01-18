@@ -20,7 +20,7 @@ model FileUpload {
 
 model users {
   id                 String  @id @default(auto()) @map("_id") @db.ObjectId
-  googleId           String?
+  googleId           String? @unique
   profileImage       String?
   email              String  @unique
   name               String
