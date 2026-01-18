@@ -18,7 +18,7 @@ model FileUpload {
   url String
 }
 
-model users {
+model Users {
   id                 String  @id @default(auto()) @map("_id") @db.ObjectId
   googleId           String? @unique
   profileImage       String?
@@ -28,10 +28,10 @@ model users {
   status             String?
   usersInformationId String? @db.ObjectId
 
-  usersInformation usersInformation? @relation(fields: [usersInformationId], references: [id])
+  usersInformation UsersInformation? @relation(fields: [usersInformationId], references: [id])
 }
 
-model usersInformation {
+model UsersInformation {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
   firstName     String
   lastName      String
@@ -59,7 +59,7 @@ model usersInformation {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  Users           users[]
+  Users           Users[]
   loanGuarantors  LoanGuarantor[]
   JobDetail       JobDetail?
   bankInformation BankInformation?
@@ -69,20 +69,20 @@ model usersInformation {
 }
 
 model JobDetail {
-  id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  occupation     String
-  companyName    String?
-  companyAddress String?
-  position       String?
-  salaryPerMonth Float
-  otherIncome    Float?   @default(0)
-  workYears      Int
-  employmentType String // fulltime freelance business
-  salarySlip     String[]
+  id                 String    @id @default(auto()) @map("_id") @db.ObjectId
+  occupation         String
+  companyName        String?
+  companyAddress     String?
+  position           String?
+  salaryPerMonth     Float
+  otherIncome        Float?    @default(0)
+  workYears          Int
+  employmentType     String // fulltime freelance business
+  salarySlip         String[]
+  startDate          DateTime?
+  usersInformationId String    @unique @db.ObjectId
 
-  usersInformationId String @unique @db.ObjectId
-
-  usersInformation usersInformation @relation(fields: [usersInformationId], references: [id])
+  usersInformation UsersInformation @relation(fields: [usersInformationId], references: [id])
 }
 
 model BankInformation {
@@ -103,7 +103,7 @@ model BankInformation {
 
   usersInformationId String @unique @db.ObjectId
 
-  usersInformation usersInformation @relation(fields: [usersInformationId], references: [id])
+  usersInformation UsersInformation @relation(fields: [usersInformationId], references: [id])
 }
 
 model LoanGuarantor {
@@ -117,7 +117,7 @@ model LoanGuarantor {
 
   createdAt DateTime @default(now())
 
-  usersInformation usersInformation @relation(fields: [usersInformationId], references: [id])
+  usersInformation UsersInformation @relation(fields: [usersInformationId], references: [id])
 }
 
 // Aaddess
@@ -129,7 +129,7 @@ model Province {
 
   districts         District[]
   subdistricts      Subdistrict[]      @relation("ProvinceSubdistrict")
-  usersInformations usersInformation[]
+  usersInformations UsersInformation[]
 }
 
 model District {
@@ -142,7 +142,7 @@ model District {
   province     Province @relation(fields: [provinceCode], references: [code])
 
   subdistricts      Subdistrict[]
-  usersInformations usersInformation[]
+  usersInformations UsersInformation[]
 }
 
 model Subdistrict {
@@ -157,5 +157,5 @@ model Subdistrict {
 
   provinceCode      Int
   province          Province           @relation("ProvinceSubdistrict", fields: [provinceCode], references: [code])
-  usersInformations usersInformation[]
+  usersInformations UsersInformation[]
 }
