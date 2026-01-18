@@ -26,7 +26,7 @@ model users {
   name               String
   password           String?
   status             String?
-  usersInformationId String  @unique @db.ObjectId
+  usersInformationId String? @unique @db.ObjectId
 
   usersInformation usersInformation? @relation(fields: [usersInformationId], references: [id])
 }
