@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 import {
   getPagination,
   buildPaginationMeta,
-} from "../helpers/pagination.helper.js";
+} from "../helpers/pagination.helper";
 
 const getUsers = async (_req: Request, res: Response) => {
   try {
