@@ -36,16 +36,22 @@ const getUsers = async (_req: Request, res: Response) => {
   }
 };
 
-const findOne = async (_req: Request, res: Response) => {
+const findOne = async (req: Request, res: Response) => {
+  const isObjectId = (value: string) => /^[0-9a-fA-F]{24}$/.test(value);
+
   try {
-    const id = _req.params.id;
-    const existingUser = await prisma.users.findFirst({
-      where: { id },
+    const { id } = req.params;
+
+    const where = isObjectId(id)
+      ? { id } // Mongo ObjectId
+      : { googleId: id }; // Google ID
+
+    const user = await prisma.users.findFirst({
+      where,
       include: {
         usersInformation: {
           include: {
             JobDetail: true,
-            // bankInformation: true,
             province: true,
             district: true,
             subdistrict: true,
@@ -54,15 +60,22 @@ const findOne = async (_req: Request, res: Response) => {
       },
     });
 
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
     res.status(200).json({
       success: true,
-      data: existingUser,
+      data: user,
     });
   } catch (error) {
-    console.error("getUsers error:", error);
+    console.error("findOne error:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to fetch users",
+      message: "Failed to fetch user",
     });
   }
 };
