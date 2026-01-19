@@ -51,6 +51,7 @@ const findOne = async (req: Request, res: Response) => {
       include: {
         usersInformation: {
           include: {
+            bankInformation: true,
             JobDetail: true,
             province: true,
             district: true,

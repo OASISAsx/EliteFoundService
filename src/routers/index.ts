@@ -4,6 +4,7 @@ import uploadRouter from "./upload.route";
 import thaiGeo from "./thaiGeo.route";
 import informationRouter from "./information.route";
 import JobDetailRouter from "./jobDetail.route";
+import BankInformationRouter from "./bankInfornation.route";
 
 const routes = [
   { path: "/api", router: userRouter },
@@ -12,6 +13,7 @@ const routes = [
   { path: "/api/upload", router: uploadRouter },
   { path: "/api", router: thaiGeo },
   { path: "/api", router: JobDetailRouter },
+  { path: "/api", router: BankInformationRouter },
 ];
 
 export default routes;

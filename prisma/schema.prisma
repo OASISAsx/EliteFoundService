@@ -59,13 +59,16 @@ model UsersInformation {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  Users           Users[]
+  // 🔹 back relation
+  users Users[]
+
   loanGuarantors  LoanGuarantor[]
   JobDetail       JobDetail?
   bankInformation BankInformation?
-  province        Province?        @relation(fields: [provinceCode], references: [code])
-  district        District?        @relation(fields: [districtCode], references: [code])
-  subdistrict     Subdistrict?     @relation(fields: [subdistrictCode], references: [code])
+
+  province    Province?    @relation(fields: [provinceCode], references: [code])
+  district    District?    @relation(fields: [districtCode], references: [code])
+  subdistrict Subdistrict? @relation(fields: [subdistrictCode], references: [code])
 }
 
 model JobDetail {
@@ -86,22 +89,27 @@ model JobDetail {
 }
 
 model BankInformation {
-  id                String @id @default(auto()) @map("_id") @db.ObjectId
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
   bankName          String
   bankAccountName   String
   bankAccountNumber String
+  bankBranch        String?
+  accountType       String?
 
-  monthlyExpense          Float
+  monthlyIncome   Float
+  monthlyExpense  Float
+  balanceEstimate Float?
+
   existingDebt            Boolean @default(false)
-  debtAmount              Float?  @default(0)
-  debtInstallmentPerMonth Float?  @default(0)
+  debtInstallmentPerMonth Float?
 
-  kycStatus      String   @default("pending")
-  creditScore    Int?
-  riskLevel      String?
-  bank_statement String[]
+  riskLevel String?
+  kycStatus String  @default("pending")
 
-  usersInformationId String @unique @db.ObjectId
+  bankStatementFiles String[]
+  passbookImage      String?
+  usersInformationId String   @unique @db.ObjectId
 
   usersInformation UsersInformation @relation(fields: [usersInformationId], references: [id])
 }

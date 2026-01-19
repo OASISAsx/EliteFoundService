@@ -67,16 +67,41 @@ const createUsersInformation = async (req: Request, res: Response) => {
 const findOne = async (req: Request, res: Response) => {
   try {
     const id = req.params.id;
-    const userId = await prisma.usersInformation.findUnique({
-      where: { id },
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "userId is required",
+      });
+    }
+
+    const user = await prisma.users.findFirst({
+      where: { id: id },
+      include: {
+        usersInformation: {
+          include: {
+            bankInformation: true,
+          },
+        },
+      },
     });
 
-    res.status(201).json({ success: true, data: userId });
+    if (!user || !user.usersInformation) {
+      return res.status(404).json({
+        success: false,
+        message: "User information not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: user.usersInformation,
+    });
   } catch (error) {
-    console.error("CREATE USER INFO ERROR:", error);
+    console.error("GET USER INFO ERROR:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to create user information",
+      message: "Failed to get user information",
     });
   }
 };
@@ -85,6 +110,13 @@ const update = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "id is required",
+      });
+    }
+
     const {
       id: _,
       provinceCode,
@@ -92,6 +124,7 @@ const update = async (req: Request, res: Response) => {
       subdistrictCode,
       createdAt,
       updatedAt,
+      bankInformation,
       ...rest
     } = req.body;
 
@@ -99,18 +132,34 @@ const update = async (req: Request, res: Response) => {
       where: { id },
       data: {
         ...rest,
+
         province: provinceCode
           ? { connect: { code: provinceCode } }
-          : undefined,
+          : { disconnect: true },
+
         district: districtCode
           ? { connect: { code: districtCode } }
-          : undefined,
+          : { disconnect: true },
+
         subdistrict: subdistrictCode
           ? { connect: { code: subdistrictCode } }
-          : undefined,
+          : { disconnect: true },
+
+        ...(bankInformation && {
+          bankInformation: {
+            upsert: {
+              create: bankInformation,
+              update: bankInformation,
+            },
+          },
+        }),
       },
     });
-    res.status(200).json({ success: true, data: updateData });
+
+    res.status(200).json({
+      success: true,
+      data: updateData,
+    });
   } catch (error) {
     console.error("UPDATE USER INFO ERROR:", error);
     res.status(500).json({
