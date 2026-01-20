@@ -208,7 +208,6 @@ const loginGoogle = async (req: Request, res: Response) => {
       usersInformation: {
         include: {
           JobDetail: true,
-          // bankInformation: true,
           province: true,
           district: true,
           subdistrict: true,
@@ -230,7 +229,6 @@ const loginGoogle = async (req: Request, res: Response) => {
         usersInformation: {
           include: {
             JobDetail: true,
-            // bankInformation: true,
             province: true,
             district: true,
             subdistrict: true,
@@ -246,7 +244,6 @@ const loginGoogle = async (req: Request, res: Response) => {
         usersInformation: {
           include: {
             JobDetail: true,
-            // bankInformation: true,
             province: true,
             district: true,
             subdistrict: true,
@@ -256,7 +253,28 @@ const loginGoogle = async (req: Request, res: Response) => {
     });
   }
 
-  res.json({ data: user });
+  const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
+    expiresIn: "1h",
+  });
+
+  await prisma.sessions.upsert({
+    where: {
+      user_id: user.id,
+    },
+    update: {
+      jwt: token,
+    },
+    create: {
+      user_id: user.id,
+      jwt: token,
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    token,
+    data: user,
+  });
 };
 
 export { getUsers, register, login, loginGoogle, findOne };
