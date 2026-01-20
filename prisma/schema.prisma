@@ -60,15 +60,14 @@ model UsersInformation {
   updatedAt   DateTime @updatedAt
 
   // 🔹 back relation
-  users Users[]
-
-  loanGuarantors  LoanGuarantor[]
+  users           Users[]
   JobDetail       JobDetail?
   bankInformation BankInformation?
 
-  province    Province?    @relation(fields: [provinceCode], references: [code])
-  district    District?    @relation(fields: [districtCode], references: [code])
-  subdistrict Subdistrict? @relation(fields: [subdistrictCode], references: [code])
+  province      Province?      @relation(fields: [provinceCode], references: [code])
+  district      District?      @relation(fields: [districtCode], references: [code])
+  subdistrict   Subdistrict?   @relation(fields: [subdistrictCode], references: [code])
+  loanContracts LoanContract[]
 }
 
 model JobDetail {
@@ -114,18 +113,52 @@ model BankInformation {
   usersInformation UsersInformation @relation(fields: [usersInformationId], references: [id])
 }
 
-model LoanGuarantor {
-  id                 String @id @default(auto()) @map("_id") @db.ObjectId
-  usersInformationId String @unique @db.ObjectId
+model LoanContract {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  name         String
-  relationship String
-  phone        String
-  address      String
+  loanAmount          Float
+  interestRate        Float
+  termMonths          Int
+  installmentPerMonth Float
+
+  loanType String @default("effective") // flat | effective
+
+  status String @default("active")
+  // pending, active, closed, default
+
+  startDate DateTime
+
+  usersInformationId String           @db.ObjectId
+  usersInformation   UsersInformation @relation(fields: [usersInformationId], references: [id])
+
+  repayments LoanRepayment[]
 
   createdAt DateTime @default(now())
+}
 
-  usersInformation UsersInformation @relation(fields: [usersInformationId], references: [id])
+model LoanRepayment {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  installmentNo Int
+
+  dueDate  DateTime
+  dueMonth String // "2026-02"
+
+  principal Float
+  interest  Float
+  total     Float
+  balance   Float
+
+  status String @default("unpaid")
+  // unpaid, paid, late
+
+  paidAmount Float?
+  paidAt     DateTime?
+
+  loanContractId String       @db.ObjectId
+  loanContract   LoanContract @relation(fields: [loanContractId], references: [id])
+
+  createdAt DateTime @default(now())
 }
 
 // Aaddess
