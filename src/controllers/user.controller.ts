@@ -107,17 +107,16 @@ const register = async (req: Request, res: Response) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    const newUser = await prisma.users.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        status: "active",
-      },
-      include: {
-        usersInformation: true,
-      },
-    });
+    const data: any = {
+      name,
+      email,
+      password: hashedPassword,
+      status: "active",
+    };
+    const googleId = data.googleId;
+    data.googleId = googleId;
+    console.log(googleId, "googleId");
+    const newUser = await prisma.users.create({ data });
 
     return res.status(201).json({
       success: true,
@@ -143,7 +142,6 @@ const login = async (req: Request, res: Response) => {
         usersInformation: {
           include: {
             JobDetail: true,
-            // bankInformation: true,
             province: true,
             district: true,
             subdistrict: true,
@@ -171,8 +169,23 @@ const login = async (req: Request, res: Response) => {
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
       expiresIn: "1h",
     });
+
+    await prisma.sessions.upsert({
+      where: {
+        user_id: user.id,
+      },
+      update: {
+        jwt: token,
+      },
+      create: {
+        user_id: user.id,
+        jwt: token,
+      },
+    });
+
     res.status(200).json({
       success: true,
+      token,
       data: user,
     });
   } catch (error) {

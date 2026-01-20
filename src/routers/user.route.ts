@@ -15,6 +15,6 @@ router.post("/register", register);
 router.post("/login", login); // ต้องมี token
 // router.post("/Information", createAbout);
 router.post("/loginGoogle", loginGoogle);
-router.post("/user/:id", findOne);
+router.post("/user/:id", verifyToken, findOne);
 // router.get("/users", verifyToken, getUsers);
 export default router;

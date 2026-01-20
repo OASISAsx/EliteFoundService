@@ -25,26 +25,28 @@ const createUsersInformation = async (req: Request, res: Response) => {
   const { userId, ...body } = req.body;
 
   try {
-    // if (body.date_of_birth && body.date_of_birth !== "") {
-    //   body.date_of_birth = new Date(body.date_of_birth);
-    // } else {
-    //   delete body.date_of_birth;
-    // }
-    const { citizenId } = body;
+    const { citizenId, phone } = body;
 
-    const exists = await prisma.usersInformation.findUnique({
-      where: { citizenId },
+    const exists = await prisma.usersInformation.findFirst({
+      where: {
+        OR: [{ citizenId }, { phone }].filter(Boolean),
+      },
     });
 
     if (exists) {
-      return res.status(400).json({
+      return res.status(200).json({
         success: false,
-        message: "CitizenId already exists",
+        message: "ข้อมูลถูกใช้ไปแล้ว",
       });
     }
 
+    const data: any = { ...body };
+
+    if (!citizenId) delete data.citizenId;
+    if (!phone) delete data.phone;
+
     const info = await prisma.usersInformation.create({
-      data: body,
+      data,
     });
 
     await prisma.users.update({
@@ -148,11 +150,23 @@ const update = async (req: Request, res: Response) => {
         ...(bankInformation && {
           bankInformation: {
             upsert: {
-              create: bankInformation,
+              where: {
+                usersInformationId: id, // 🔥 สำคัญมาก
+              },
+              create: {
+                ...bankInformation,
+                usersInformationId: id,
+              },
               update: bankInformation,
             },
           },
         }),
+      },
+      include: {
+        bankInformation: true,
+        province: true,
+        district: true,
+        subdistrict: true,
       },
     });
 

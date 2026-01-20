@@ -8,7 +8,7 @@ const JWT_SECRET =
 export const verifyToken = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const authHeader = req.headers.authorization;
 
