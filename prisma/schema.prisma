@@ -136,6 +136,8 @@ model LoanContract {
   createdAt DateTime @default(now())
 }
 
+
+
 model LoanRepayment {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 

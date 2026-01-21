@@ -5,6 +5,7 @@ import thaiGeo from "./thaiGeo.route";
 import informationRouter from "./information.route";
 import JobDetailRouter from "./jobDetail.route";
 import BankInformationRouter from "./bankInfornation.route";
+import loadContratRouter from "./loanContract.route";
 
 const routes = [
   { path: "/api", router: userRouter },
@@ -14,6 +15,7 @@ const routes = [
   { path: "/api", router: thaiGeo },
   { path: "/api", router: JobDetailRouter },
   { path: "/api", router: BankInformationRouter },
+  { path: "/api", router: loadContratRouter },
 ];
 
 export default routes;
