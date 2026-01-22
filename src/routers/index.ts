@@ -6,6 +6,7 @@ import informationRouter from "./information.route";
 import JobDetailRouter from "./jobDetail.route";
 import BankInformationRouter from "./bankInfornation.route";
 import loadContratRouter from "./loanContract.route";
+import MainStatusRouter from "./mainStatus";
 
 const routes = [
   { path: "/api", router: userRouter },
@@ -16,6 +17,7 @@ const routes = [
   { path: "/api", router: JobDetailRouter },
   { path: "/api", router: BankInformationRouter },
   { path: "/api", router: loadContratRouter },
+  { path: "/api", router: MainStatusRouter },
 ];
 
 export default routes;

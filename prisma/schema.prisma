@@ -64,10 +64,12 @@ model UsersInformation {
   JobDetail       JobDetail?
   bankInformation BankInformation?
 
-  province      Province?      @relation(fields: [provinceCode], references: [code])
-  district      District?      @relation(fields: [districtCode], references: [code])
-  subdistrict   Subdistrict?   @relation(fields: [subdistrictCode], references: [code])
-  loanContracts LoanContract[]
+  province       Province?       @relation(fields: [provinceCode], references: [code])
+  district       District?       @relation(fields: [districtCode], references: [code])
+  subdistrict    Subdistrict?    @relation(fields: [subdistrictCode], references: [code])
+  loanContracts  LoanContract[]
+  mainStatus     MainStatus?
+  userChartStats UserChartStat[]
 }
 
 model JobDetail {
@@ -123,8 +125,8 @@ model LoanContract {
 
   loanType String @default("effective") // flat | effective
 
-  status String @default("active")
-  // pending, active, closed, default
+  status String @default("pending")
+  // pending, approve, reject
 
   startDate DateTime
 
@@ -135,8 +137,6 @@ model LoanContract {
 
   createdAt DateTime @default(now())
 }
-
-
 
 model LoanRepayment {
   id String @id @default(auto()) @map("_id") @db.ObjectId
@@ -161,6 +161,36 @@ model LoanRepayment {
   loanContract   LoanContract @relation(fields: [loanContractId], references: [id])
 
   createdAt DateTime @default(now())
+}
+
+model MainStatus {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  usersInformationId String @unique @db.ObjectId
+
+  totalContracts    Int   @default(0) // จำนวนสัญญา
+  pendingAmount     Float @default(0) // เงินที่รออนุมัติ
+  approvedContracts Int   @default(0) // สัญญาที่อนุมัติ
+  approvedAmount    Float @default(0) // วงเงินที่อนุมัติแล้ว
+  usedAmount        Float @default(0) // เงินที่ใช้ไปแล้ว
+
+  approvalRate  Float? // %
+  lastUpdatedAt DateTime @updatedAt
+
+  usersInformation UsersInformation @relation(fields: [usersInformationId], references: [id])
+}
+
+model UserChartStat {
+  id                 String @id @default(auto()) @map("_id") @db.ObjectId
+  usersInformationId String @db.ObjectId
+
+  date     DateTime
+  dayLabel String // Mon, Tue
+  value    Float
+
+  type String // loan, payment, approve
+
+  usersInformation UsersInformation @relation(fields: [usersInformationId], references: [id])
 }
 
 // Aaddess

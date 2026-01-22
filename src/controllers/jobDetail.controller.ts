@@ -1,5 +1,6 @@
 import prisma from "../prisma/client";
 import { Request, Response } from "express";
+import { createMainStatus } from "../services/statusMain.service";
 
 const create = async (req: Request, res: Response) => {
   try {
@@ -23,7 +24,7 @@ const create = async (req: Request, res: Response) => {
         usersInformationId,
       },
     });
-    console.log(updateData);
+    await createMainStatus(usersInformationId);
     res.status(200).json({ success: true, data: updateData });
   } catch (error) {
     console.error("JOB DETAIL ERROR:", error);

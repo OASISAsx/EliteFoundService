@@ -31,7 +31,7 @@ export const createLoanApplication = async (payload: any) => {
       termMonths,
       loanType,
       installmentPerMonth,
-      status: "active",
+      status: "pending",
       startDate: new Date(startDate),
       usersInformationId,
     },
