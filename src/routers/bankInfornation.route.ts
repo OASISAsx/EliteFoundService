@@ -9,7 +9,7 @@ import {
 const router = Router();
 
 router.post("/BankInformation", create);
-router.get("/BankInformation/:id", findOne);
+router.get("/BankInformation/:usersInformationId", findOne);
 router.put("/BankInformation/:id", update);
 // router.get("/jobDetail", verifyToken, getUsers);
 export default router;
