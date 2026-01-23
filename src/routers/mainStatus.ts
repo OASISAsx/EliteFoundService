@@ -4,6 +4,6 @@ import { MainStatus } from "../services/statusMain.service";
 
 const router = express.Router();
 
-router.get("/status/:id", MainStatus);
+router.get("/status/:usersInformationId", MainStatus);
 
 export default router;

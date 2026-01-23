@@ -1,34 +1,61 @@
 // src/middleware/verifyToken.ts
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import prisma from "../prisma/client";
+import { CustomRequest } from "../types/request.type";
 
-const JWT_SECRET =
-  process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production";
+interface JwtPayload {
+  id: string;
+}
 
-export const verifyToken = (
-  req: Request,
+export const verifyToken = async (
+  req: CustomRequest,
   res: Response,
   next: NextFunction,
 ) => {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({
-      success: false,
-      message: "ไม่มี token กรุณาล็อกอิน",
-    });
+  if (!authHeader?.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "No token" });
   }
 
-  const token = authHeader.split(" ")[1];
-
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
-    (req as any).user = decoded;
-    next();
-  } catch (error) {
-    return res.status(401).json({
-      success: false,
-      message: "Token ไม่ถูกต้องหรือหมดอายุ",
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+
+    const user = await prisma.users.findUnique({
+      where: { id: decoded.id },
+      include: {
+        userRoles: {
+          include: {
+            role: true,
+          },
+        },
+      },
     });
+
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+
+    const roles = user.userRoles.map(
+      (ur) => ur.role.name, // "ADMIN"
+    );
+
+    req.auth = {
+      userId: user.id,
+      roles,
+    };
+
+    req.user = {
+      id: user.id,
+      email: user.email ?? undefined,
+    };
+
+    console.log("✅ verifyToken auth:", req.auth);
+
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid token" });
   }
 };

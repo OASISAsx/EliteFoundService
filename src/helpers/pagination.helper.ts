@@ -3,6 +3,7 @@ type PaginationParams = {
   limit?: number;
 };
 
+
 const getPagination = ({ page = 1, limit = 10 }: PaginationParams) => {
   const take = Number(limit);
   const skip = (Number(page) - 1) * take;
@@ -17,4 +18,7 @@ const buildPaginationMeta = (total: number, page: number, limit: number) => ({
   totalPages: Math.ceil(total / limit),
 });
 
+
+
 export { getPagination, buildPaginationMeta };
+

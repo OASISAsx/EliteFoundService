@@ -18,6 +18,36 @@ model FileUpload {
   url String
 }
 
+model Role {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  name        String  @unique // ADMIN, USER, STAFF
+  description String?
+
+  // 🔐 Security
+  apiSecret String // ใช้ sign (HMAC)
+  aesKey    String // ใช้ encrypt payload
+  isActive  Boolean @default(true)
+
+  // relation
+  users UserRole[]
+
+  // audit
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserRole {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @db.ObjectId
+  roleId String @db.ObjectId
+
+  user Users @relation(fields: [userId], references: [id])
+  role Role  @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, roleId])
+}
+
 model Users {
   id                 String  @id @default(auto()) @map("_id") @db.ObjectId
   googleId           String?
@@ -29,6 +59,7 @@ model Users {
   usersInformationId String? @db.ObjectId
 
   usersInformation UsersInformation? @relation(fields: [usersInformationId], references: [id])
+  userRoles        UserRole[]
 }
 
 model UsersInformation {

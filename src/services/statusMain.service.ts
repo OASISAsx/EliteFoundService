@@ -18,7 +18,7 @@ const createMainStatus = async (usersInformationId: string) => {
 const MainStatus = async (req: Request, res: Response) => {
   try {
     const { usersInformationId } = req.params;
-    const findOne = await prisma.mainStatus.findMany({
+    const findOne = await prisma.mainStatus.findFirst({
       where: { usersInformationId },
     });
 

@@ -3,19 +3,28 @@ import prisma from "../prisma/client";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import {
+  paginationSchema,
+  PaginationInput,
+} from "../schemas/pagination.schema";
+import {
   getPagination,
   buildPaginationMeta,
-} from "../helpers/pagination.helper";
+} from "../helpers/paginationZod.helper";
+import { ZodError } from "zod";
+import { CustomRequest } from "../types/request.type";
 
-const getUsers = async (_req: Request, res: Response) => {
+const getUsers = async (req: CustomRequest, res: Response) => {
   try {
-    const { page, limit, take, skip } = getPagination(_req.query);
+    // ✅ validate input (หลัง decrypt)
+    const parsed: PaginationInput = paginationSchema.parse(
+      req.decryptedBody ?? req.query,
+    );
+
+    const { take, skip, page, limit } = getPagination(parsed);
 
     const [data, total] = await Promise.all([
       prisma.users.findMany({
-        include: {
-          usersInformation: true,
-        },
+        include: { usersInformation: true },
         take,
         skip,
       }),
@@ -24,10 +33,18 @@ const getUsers = async (_req: Request, res: Response) => {
 
     res.status(200).json({
       success: true,
-      data: data,
+      data,
       meta: buildPaginationMeta(total, page, limit),
     });
   } catch (error) {
+    if (error instanceof ZodError) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid pagination parameters",
+        // errors: error.errors,
+      });
+    }
+
     console.error("getUsers error:", error);
     res.status(500).json({
       success: false,
@@ -49,6 +66,11 @@ const findOne = async (req: Request, res: Response) => {
     const user = await prisma.users.findFirst({
       where,
       include: {
+        userRoles: {
+          include: {
+            role: true,
+          },
+        },
         usersInformation: {
           include: {
             bankInformation: true,
@@ -60,8 +82,13 @@ const findOne = async (req: Request, res: Response) => {
         },
       },
     });
+    const roles = user?.userRoles.map((ur) => ur.role.name);
 
-    if (!user) {
+    const { userRoles, ...userWithoutRoles } = user ?? {};
+
+    let data = [userWithoutRoles, roles];
+
+    if (!data) {
       return res.status(404).json({
         success: false,
         message: "User not found",
@@ -70,7 +97,7 @@ const findOne = async (req: Request, res: Response) => {
 
     res.status(200).json({
       success: true,
-      data: user,
+      data: data,
     });
   } catch (error) {
     console.error("findOne error:", error);
@@ -205,6 +232,11 @@ const loginGoogle = async (req: Request, res: Response) => {
       OR: [{ googleId }, { email }],
     },
     include: {
+      userRoles: {
+        include: {
+          role: true,
+        },
+      },
       usersInformation: {
         include: {
           JobDetail: true,
@@ -226,6 +258,11 @@ const loginGoogle = async (req: Request, res: Response) => {
         status: "active",
       },
       include: {
+        userRoles: {
+          include: {
+            role: true,
+          },
+        },
         usersInformation: {
           include: {
             JobDetail: true,
@@ -241,6 +278,11 @@ const loginGoogle = async (req: Request, res: Response) => {
       where: { id: user.id },
       data: { googleId },
       include: {
+        userRoles: {
+          include: {
+            role: true,
+          },
+        },
         usersInformation: {
           include: {
             JobDetail: true,
