@@ -147,8 +147,8 @@ model BankInformation {
 }
 
 model LoanContract {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-
+  id                  String @id @default(auto()) @map("_id") @db.ObjectId
+  loanNo              String @unique
   loanAmount          Float
   interestRate        Float
   termMonths          Int
@@ -156,7 +156,7 @@ model LoanContract {
 
   loanType String @default("effective") // flat | effective
 
-  status String @default("pending")
+  status LoanStatus @default(PENDING)
   // pending, approve, reject
 
   startDate DateTime
@@ -167,6 +167,14 @@ model LoanContract {
   repayments LoanRepayment[]
 
   createdAt DateTime @default(now())
+}
+
+enum LoanStatus {
+  PENDING // รอดำเนินการ
+  APPROVED // อนุมัติ
+  ACTIVE // กำลังผ่อน
+  COMPLETED // ปิดสัญญา
+  REJECTED // ปฏิเสธ
 }
 
 model LoanRepayment {

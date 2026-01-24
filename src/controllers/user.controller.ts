@@ -8,7 +8,7 @@ import {
 } from "../schemas/pagination.schema";
 import {
   getPagination,
-  buildPaginationMeta,
+  // buildPaginationMeta,
 } from "../helpers/paginationZod.helper";
 import { ZodError } from "zod";
 import { CustomRequest } from "../types/request.type";
@@ -34,7 +34,7 @@ const getUsers = async (req: CustomRequest, res: Response) => {
     res.status(200).json({
       success: true,
       data,
-      meta: buildPaginationMeta(total, page, limit),
+      // meta: buildPaginationMeta(total, page, limit),
     });
   } catch (error) {
     if (error instanceof ZodError) {

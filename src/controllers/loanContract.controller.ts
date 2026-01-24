@@ -6,6 +6,90 @@ import {
 } from "../services/statusMain.service";
 import { calculateSchedule } from "../utils/calculateSchedule";
 import { Request, Response } from "express";
+import { getPagination } from "../helpers/paginationZod.helper";
+import { ZodError } from "zod";
+import { CustomRequest } from "../types/request.type";
+import {
+  PaginationInput,
+  paginationSchema,
+} from "../schemas/pagination.schema";
+import { ALL_LOAN_STATUS } from "../constants/statusDefault";
+import { generateLoanNo } from "../services/RunningNumberLoanContact";
+import { buildPaginationMeta } from "../helpers/pagination.helper";
+
+const getUsersLoan = async (req: CustomRequest, res: Response) => {
+  try {
+    const parsed = paginationSchema.parse(req.decryptedBody ?? req.query);
+    console.log("✅ PARSED PAGINATION:", parsed);
+    const { page: safePage, limit, take, skip } = getPagination(parsed);
+    console.log("🔍 decryptedBody =", req.decryptedBody);
+
+    console.log("🧮 PAGINATION CALC:", {
+      inputPage: parsed.page,
+      safePage,
+      take,
+      skip,
+    });
+    const where = {};
+
+    const [data, total] = await Promise.all([
+      prisma.loanContract.findMany({
+        where,
+        include: {
+          usersInformation: {
+            include: {
+              bankInformation: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        take,
+        skip,
+      }),
+      prisma.loanContract.count({
+        where,
+      }),
+    ]);
+
+    const statusGroup = await prisma.loanContract.groupBy({
+      where,
+      by: ["status"],
+      _count: { status: true },
+    });
+
+    const statusSummary = ALL_LOAN_STATUS.reduce(
+      (acc, status) => {
+        acc[status] = 0;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+
+    statusGroup.forEach((item) => {
+      statusSummary[item.status] = item._count.status;
+    });
+
+    res.status(200).json({
+      success: true,
+      data,
+      meta: buildPaginationMeta(total, safePage, limit),
+      status: statusSummary,
+    });
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid pagination parameters",
+      });
+    }
+
+    console.error("getUsersLoan error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch Loan",
+    });
+  }
+};
 
 const createLoanContact = async (req: Request, res: Response) => {
   try {
@@ -24,18 +108,20 @@ const createLoanContact = async (req: Request, res: Response) => {
     const months = Number(termMonths);
 
     const schedule = calculateSchedule(amount, rate, months, startDate);
+    const loanNo = await generateLoanNo();
 
     const installmentPerMonth = schedule[0].total;
     const result = await prisma.$transaction(async (tx) => {
       // 1. create contract
       const loan = await tx.loanContract.create({
         data: {
+          loanNo,
           loanAmount: amount,
           interestRate: rate,
           termMonths: months,
           loanType,
           installmentPerMonth,
-          status: "pending",
+          status: "PENDING",
           startDate: new Date(startDate),
           usersInformationId,
         },
@@ -104,7 +190,7 @@ const updateStatusByAdmin = async (req: Request, res: Response) => {
       const updatedLoan = await tx.loanContract.update({
         where: { id: loanContractId },
         data: {
-          status: "approve",
+          status: "APPROVED",
           installmentPerMonth,
         },
       });
@@ -178,6 +264,7 @@ const findAllUserContactLoan = async (req: Request, res: Response) => {
     const findData = await prisma.loanContract.findMany({
       include: {
         repayments: true,
+        usersInformation: true,
       },
     });
     res.status(200).json({
@@ -197,4 +284,5 @@ export {
   findOneContactLoan,
   updateStatusByAdmin,
   findAllUserContactLoan,
+  getUsersLoan,
 };

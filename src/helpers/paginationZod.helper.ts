@@ -1,19 +1,16 @@
 import { PaginationInput } from "../schemas/pagination.schema";
 
 export const getPagination = ({ page, limit }: PaginationInput) => {
+  // 👇 รองรับ 0-based จาก frontend (เช่น MUI DataGrid)
+  const safePage = page <= 0 ? 1 : page;
+
   const take = limit;
-  const skip = (page - 1) * limit;
+  const skip = (safePage - 1) * limit;
 
-  return { page, limit, take, skip };
+  return {
+    page: safePage, // 👈 backend page (1-based)
+    limit,
+    take,
+    skip,
+  };
 };
-
-export const buildPaginationMeta = (
-  total: number,
-  page: number,
-  limit: number,
-) => ({
-  total,
-  page,
-  limit,
-  totalPages: Math.ceil(total / limit),
-});

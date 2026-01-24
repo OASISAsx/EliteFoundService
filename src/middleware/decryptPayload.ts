@@ -3,6 +3,7 @@ import CryptoJS from "crypto-js";
 import { Response, NextFunction } from "express";
 import { CustomRequest } from "../types/request.type";
 
+// src/middleware/decryptPayload.ts
 export const decryptPayload = (
   req: CustomRequest,
   res: Response,
@@ -26,7 +27,10 @@ export const decryptPayload = (
       return res.status(400).json({ message: "Invalid payload" });
     }
 
-    req.body = JSON.parse(decrypted);
+    const parsed = JSON.parse(decrypted);
+
+    req.decryptedBody = parsed; // ⭐ จุดสำคัญที่สุด
+    console.log("🔓 decryptedBody:", parsed);
 
     next();
   } catch (err) {
