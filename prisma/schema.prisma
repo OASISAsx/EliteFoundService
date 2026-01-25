@@ -84,7 +84,7 @@ model UsersInformation {
   subdistrictCode Int?
   zipcode         String?
 
-  loanStatus String @default("pending")
+  status Status @default(PENDING)
 
   other_files String[]
   createdAt   DateTime @default(now())
@@ -175,6 +175,12 @@ enum LoanStatus {
   ACTIVE // กำลังผ่อน
   COMPLETED // ปิดสัญญา
   REJECTED // ปฏิเสธ
+}
+
+enum Status {
+  PENDING // รอดำเนินการ
+  APPROVED // อนุมัติ
+  ACTIVE // กำลังผ่อน
 }
 
 model LoanRepayment {

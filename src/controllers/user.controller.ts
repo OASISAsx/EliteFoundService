@@ -12,6 +12,8 @@ import {
 } from "../helpers/paginationZod.helper";
 import { ZodError } from "zod";
 import { CustomRequest } from "../types/request.type";
+import { createUserLogin } from "./roleUser.controller";
+import { buildPaginationMeta } from "../helpers/pagination.helper";
 
 const getUsers = async (req: CustomRequest, res: Response) => {
   try {
@@ -20,21 +22,38 @@ const getUsers = async (req: CustomRequest, res: Response) => {
       req.decryptedBody ?? req.query,
     );
 
-    const { take, skip, page, limit } = getPagination(parsed);
+    const { page: safePage, limit, take, skip } = getPagination(parsed);
 
     const [data, total] = await Promise.all([
       prisma.users.findMany({
-        include: { usersInformation: true },
+        where: {
+          usersInformation: {
+            isNot: null,
+          },
+        },
+        include: {
+          usersInformation: {
+            include: {
+              JobDetail: true,
+            },
+          },
+        },
         take,
         skip,
       }),
-      prisma.users.count(),
+      prisma.users.count({
+        where: {
+          usersInformation: {
+            isNot: null,
+          },
+        },
+      }),
     ]);
 
     res.status(200).json({
       success: true,
       data,
-      // meta: buildPaginationMeta(total, page, limit),
+      meta: buildPaginationMeta(total, safePage, limit),
     });
   } catch (error) {
     if (error instanceof ZodError) {
@@ -144,7 +163,7 @@ const register = async (req: Request, res: Response) => {
     data.googleId = googleId;
     console.log(googleId, "googleId");
     const newUser = await prisma.users.create({ data });
-
+    createUserLogin(newUser.id);
     return res.status(201).json({
       success: true,
       data: newUser,
@@ -166,6 +185,11 @@ const login = async (req: Request, res: Response) => {
     const user = await prisma.users.findUnique({
       where: { email },
       include: {
+        userRoles: {
+          include: {
+            role: true,
+          },
+        },
         usersInformation: {
           include: {
             JobDetail: true,
@@ -273,6 +297,7 @@ const loginGoogle = async (req: Request, res: Response) => {
         },
       },
     });
+    createUserLogin(user.id);
   } else if (!user.googleId) {
     user = await prisma.users.update({
       where: { id: user.id },
