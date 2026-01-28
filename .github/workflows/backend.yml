@@ -3,15 +3,23 @@ name: Backend CI/CD
 on:
   push:
     branches:
-      - build
+      - dev
 
 jobs:
-  deploy:
+  merge-and-deploy:
     runs-on: self-hosted
 
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Merge dev into build
+        run: |
+          git checkout build || git checkout -b build
+          git merge dev
+          git push origin build
 
       - name: Setup Node
         uses: actions/setup-node@v4
