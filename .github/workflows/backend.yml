@@ -1,29 +1,28 @@
-name: Backend Auto Deploy
+name: Backend CI/CD
 
 on:
   push:
     branches:
-      - dev
+      - build
 
 jobs:
-  deploy-backend:
+  deploy:
     runs-on: self-hosted
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Merge dev into build
-        run: |
-          git checkout build || git checkout -b build
-          git merge dev
-          git push origin build
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
 
-      - name: Build backend
-        run: |
-          cd ~/EliteFoundService
-          git pull origin build
-          npm install
-          npm run build
+      - name: Install deps
+        run: npm ci
+
+      - name: Build
+        run: npm run build
 
       - name: Restart backend
         run: |
