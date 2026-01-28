@@ -35,7 +35,6 @@ app.get("/", (_req, res) => {
   res.status(200).send("🚀 Backend is running");
 });
 
-// register routes
 routes.forEach(({ path, router }) => {
   app.use(path, router);
 });
