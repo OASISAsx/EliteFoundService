@@ -14,6 +14,7 @@ import { ZodError } from "zod";
 import { CustomRequest } from "../types/request.type";
 import { createUserLogin } from "./roleUser.controller";
 import { buildPaginationMeta } from "../helpers/pagination.helper";
+import { ALL_USER_STATUS } from "../constants/statusDefault";
 
 const getUsers = async (req: CustomRequest, res: Response) => {
   try {
@@ -23,7 +24,6 @@ const getUsers = async (req: CustomRequest, res: Response) => {
     );
 
     const { page: safePage, limit, take, skip } = getPagination(parsed);
-
     const [data, total] = await Promise.all([
       prisma.users.findMany({
         where: {
@@ -41,6 +41,7 @@ const getUsers = async (req: CustomRequest, res: Response) => {
         take,
         skip,
       }),
+
       prisma.users.count({
         where: {
           usersInformation: {
@@ -49,11 +50,29 @@ const getUsers = async (req: CustomRequest, res: Response) => {
         },
       }),
     ]);
+    const statusGroup = await prisma.usersInformation.groupBy({
+      // where: {
+      //   isNot: null,
+      // },
+      by: ["status"],
+      _count: { status: true },
+    });
 
+    const statusSummary = ALL_USER_STATUS.reduce(
+      (acc, status) => {
+        acc[status] = 0;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+    statusGroup.forEach((item) => {
+      statusSummary[item.status] = item._count.status;
+    });
     res.status(200).json({
       success: true,
       data,
       meta: buildPaginationMeta(total, safePage, limit),
+      status: statusSummary,
     });
   } catch (error) {
     if (error instanceof ZodError) {

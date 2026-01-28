@@ -180,7 +180,8 @@ enum LoanStatus {
 enum Status {
   PENDING // รอดำเนินการ
   APPROVED // อนุมัติ
-  ACTIVE // กำลังผ่อน
+  // ACTIVE // กำลังผ่อน
+  REJECTED
 }
 
 model LoanRepayment {
