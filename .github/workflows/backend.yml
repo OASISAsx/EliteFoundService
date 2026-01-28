@@ -6,23 +6,30 @@ on:
       - dev
 
 jobs:
-  deploy:
+  merge-and-deploy:
     runs-on: self-hosted
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Merge dev into build
+        run: |
+          git checkout build || git checkout -b build
+          git merge dev
+          git push origin build
+
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: npm
 
-      - name: Install deps
-        run: npm install
+      - run: npm install
 
-      - name: Build
-        run: npm run build
+      - run: npm run build
 
       - name: Restart backend
         run: |
