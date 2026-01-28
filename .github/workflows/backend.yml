@@ -6,41 +6,24 @@ on:
       - dev
 
 jobs:
-  merge-and-deploy:
+  deploy:
     runs-on: self-hosted
 
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
 
-      # ===== Merge dev -> build safely =====
-      - name: Merge dev into build (exclude workflows)
-        run: |
-          git checkout build || git checkout -b build
-          git merge dev --no-commit
-          git reset HEAD .github/workflows
-          git checkout -- .github/workflows
-          git commit -m "merge dev into build"
-          git push origin build
-
-      # ===== Setup Node =====
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: npm
 
-      # ===== Install deps =====
-      - name: Install dependencies
-        run: npm ci
+      - name: Install deps
+        run: npm install
 
-      # ===== Build =====
-      - name: Build backend
+      - name: Build
         run: npm run build
 
-      # ===== Restart backend =====
-      - name: Restart backend service
+      - name: Restart backend
         run: |
           pm2 restart elite-backend || pm2 start dist/index.js --name elite-backend
