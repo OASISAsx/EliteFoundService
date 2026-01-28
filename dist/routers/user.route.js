@@ -1,0 +1,17 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const user_controller_1 = require("../controllers/user.controller");
+const verifyToken_1 = require("../middleware/verifyToken");
+const authorize_1 = require("../middleware/authorize");
+const verifySignature_1 = require("../middleware/verifySignature");
+const decryptPayload_1 = require("../middleware/decryptPayload");
+const router = (0, express_1.Router)();
+router.post("/usersAll", verifyToken_1.verifyToken, (0, authorize_1.authorize)(["ADMIN"]), verifySignature_1.verifySignature, decryptPayload_1.decryptPayload, user_controller_1.getUsers);
+router.post("/register", user_controller_1.register);
+router.post("/login", user_controller_1.login);
+// router.post("/Information", createAbout);
+router.post("/loginGoogle", user_controller_1.loginGoogle);
+router.post("/user/:id", verifyToken_1.verifyToken, user_controller_1.findOne);
+// router.get("/users", verifyToken, getUsers);
+exports.default = router;
