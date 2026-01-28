@@ -1,4 +1,4 @@
-name: Backend CI/CD (build branch)
+name: Backend CI/CD
 
 on:
   push:
@@ -10,18 +10,21 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Checkout code
+      - name: Checkout source
         uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "npm"
 
       - name: Install dependencies
         run: npm install
 
-      - name: Build backend
+      - name: Build backend (tsc + prisma)
         run: npm run build
-
-      - name: Prisma migrate
-        run: npx prisma migrate deploy
 
       - name: Restart backend service
         run: |
-          pm2 restart backend || pm2 start dist/main.js --name backend
+          pm2 restart backend || pm2 start dist/index.js --name backend
