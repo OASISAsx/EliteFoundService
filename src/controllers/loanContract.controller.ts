@@ -170,7 +170,7 @@ const updateStatusByAdmin = async (req: Request, res: Response) => {
         throw new Error("Loan contract not found");
       }
 
-      if (status !== "approve") {
+      if (status !== "APPROVED") {
         return await tx.loanContract.update({
           where: { id: loanContractId },
           data: { status },

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import prisma from "../prisma/client";
+import { success } from "zod";
 
 const create = async (req: Request, res: Response) => {
   try {
@@ -183,4 +184,40 @@ const update = async (req: Request, res: Response) => {
   }
 };
 
-export { create, createUsersInformation, findOne, update };
+const updateStatusByAdmin = async (req: Request, res: Response) => {
+  const { id, status } = req.body;
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      const loan = await tx.usersInformation.update({
+        where: { id: id },
+        data: {
+          status,
+        },
+      });
+
+      if (!loan) {
+        throw new Error("Loan contract not found");
+      }
+
+      // if (status !== "APPROVED") {
+      //   return await tx.usersInformation.update({
+      //     where: { id: usersInformationId },
+      //     data: { status },
+      //   });
+      // }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "update Status User",
+      data: result,
+    });
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+export { create, createUsersInformation, findOne, update, updateStatusByAdmin };
