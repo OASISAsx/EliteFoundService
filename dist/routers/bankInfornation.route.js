@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const bankInformation_controller_1 = require("../controllers/bankInformation.controller");
+const router = (0, express_1.Router)();
+router.post("/BankInformation", bankInformation_controller_1.create);
+router.get("/BankInformation/:usersInformationId", bankInformation_controller_1.findOne);
+router.put("/BankInformation/:id", bankInformation_controller_1.update);
+// router.get("/jobDetail", verifyToken, getUsers);
+exports.default = router;
