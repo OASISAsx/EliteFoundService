@@ -1,9 +1,39 @@
-import express from 'express'
-import userRouter from './routers/user.route'
+import express from "express";
+import cors from "cors";
+import routes from "./routers/index";
+import { PrismaClient } from "@prisma/client";
 
-const app = express()
+declare global {
+  var prisma: PrismaClient | undefined;
+}
 
-app.use(express.json())
-app.use('/api', userRouter)
+const app = express();
+// เพิ่มตรงส่วนบนของไฟล์
 
-export default app
+// Prisma singleton (สำคัญมากสำหรับ Vercel serverless)
+const prisma =
+  global.prisma ||
+  new PrismaClient({
+    log:
+      process.env.NODE_ENV === "development"
+        ? ["query", "info", "warn", "error"]
+        : ["error"],
+  });
+
+if (process.env.NODE_ENV !== "production") {
+  global.prisma = prisma;
+}
+
+app.use(express.json());
+app.use(cors());
+app.use(express.urlencoded({ extended: true }));
+
+app.get("/", (_req, res) => {
+  res.status(200).send("🚀 Backend is running");
+});
+
+routes.forEach(({ path, router }) => {
+  app.use(path, router);
+});
+
+export default app;
