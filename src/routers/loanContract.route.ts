@@ -23,8 +23,8 @@ router.post(
   getUsersLoan,
 );
 router.post("/loanContact", createLoanContact);
-router.post("/loanContactUpdate", updateStatusByAdmin);
 router.get("/loanContact", findAllUserContactLoan);
 router.get("/loanContact/:id", findOneContactLoan);
+router.put("/loanContactUpdate/:id", updateStatusByAdmin);
 
 export default router;

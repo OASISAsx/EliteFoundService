@@ -158,12 +158,12 @@ const createLoanContact = async (req: Request, res: Response) => {
 };
 
 const updateStatusByAdmin = async (req: Request, res: Response) => {
-  const { loanContractId, status } = req.body;
-
+  const { status } = req.body;
+  const { id } = req.params;
   try {
     const result = await prisma.$transaction(async (tx) => {
       const loan = await tx.loanContract.findUnique({
-        where: { id: loanContractId },
+        where: { id },
       });
 
       if (!loan) {
@@ -172,7 +172,7 @@ const updateStatusByAdmin = async (req: Request, res: Response) => {
 
       if (status !== "APPROVED") {
         return await tx.loanContract.update({
-          where: { id: loanContractId },
+          where: { id },
           data: { status },
         });
       }
@@ -188,7 +188,7 @@ const updateStatusByAdmin = async (req: Request, res: Response) => {
       const installmentPerMonth = schedule[0].total;
 
       const updatedLoan = await tx.loanContract.update({
-        where: { id: loanContractId },
+        where: { id },
         data: {
           status: "APPROVED",
           installmentPerMonth,
